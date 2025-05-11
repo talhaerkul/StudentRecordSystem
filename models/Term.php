@@ -10,6 +10,7 @@ class Term {
     public $start_date;
     public $end_date;
     public $status;
+    public $is_current;
     public $created_at;
     public $updated_at;
 
@@ -148,7 +149,8 @@ class Term {
     public function getCurrentTerm() {
         $query = "SELECT * FROM " . $this->table_name . " 
                   WHERE NOW() BETWEEN start_date AND end_date 
-                  AND is_current = '1'
+                  AND is_current = TRUE
+                  AND status = 'active'
                   LIMIT 0,1";
         
         $stmt = $this->conn->prepare($query);
@@ -163,6 +165,30 @@ class Term {
             $this->start_date = $row['start_date'];
             $this->end_date = $row['end_date'];
             $this->is_current = $row['is_current'];
+            $this->status = $row['status'];
+            
+            return true;
+        }
+        
+        // If no current term is found, try to get the most recent term
+        $query = "SELECT * FROM " . $this->table_name . " 
+                  WHERE status = 'active'
+                  ORDER BY start_date DESC
+                  LIMIT 0,1";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        
+        if($row) {
+            // Set properties
+            $this->id = $row['id'];
+            $this->name = $row['name'];
+            $this->start_date = $row['start_date'];
+            $this->end_date = $row['end_date'];
+            $this->is_current = $row['is_current'];
+            $this->status = $row['status'];
             
             return true;
         }
@@ -171,4 +197,3 @@ class Term {
     }
 }
 ?>
-

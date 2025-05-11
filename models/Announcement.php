@@ -23,7 +23,7 @@ class Announcement {
         $this->conn = $db;
     }
 
-    // Read all announcements
+    // Read all announcements - only active and valid date range announcements for students and teachers
     public function readAll() {
         $query = "SELECT a.*, u.name as user_name, u.surname as user_surname, 
                   r.name as role_name, d.name as department_name, c.name as course_name
@@ -33,6 +33,8 @@ class Announcement {
                   LEFT JOIN departments d ON a.department_id = d.id
                   LEFT JOIN courses c ON a.course_id = c.id
                   WHERE a.status = 'active'
+                  AND (a.start_date IS NULL OR a.start_date <= NOW())
+                  AND (a.end_date IS NULL OR a.end_date >= NOW())
                   ORDER BY a.created_at DESC";
         
         $stmt = $this->conn->prepare($query);
@@ -40,9 +42,9 @@ class Announcement {
         
         return $stmt;
     }
-
-    // Read announcements by user role
-    public function readByUserRole($user_role, $user_dept) {
+    
+    // Read all announcements for admin - both active and inactive, regardless of date
+    public function readAllForAdmin() {
         $query = "SELECT a.*, u.name as user_name, u.surname as user_surname, 
                   r.name as role_name, d.name as department_name, c.name as course_name
                   FROM " . $this->table_name . " a
@@ -50,22 +52,59 @@ class Announcement {
                   LEFT JOIN roles r ON a.role_id = r.id
                   LEFT JOIN departments d ON a.department_id = d.id
                   LEFT JOIN courses c ON a.course_id = c.id
-                  WHERE a.status = 'active' 
-                  AND (a.role_id IS NULL OR a.role_id = ?)
-                  AND (a.department_id IS NULL OR a.department_id = ?)
-                  AND NOW() BETWEEN a.start_date AND a.end_date
-                  ORDER BY a.created_at DESC";
+                  ORDER BY a.status DESC, a.created_at DESC";
         
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(1, $user_role);
-        $stmt->bindParam(2, $user_dept);
         $stmt->execute();
         
         return $stmt;
     }
 
-    // Create announcement
+    // Read announcements by user role - this function is kept for role-based filtering
+    public function readByUserRole($role_id, $department_id, $status = 'active') {
+        error_log("Reading announcements for role_id: " . $role_id . ", department_id: " . ($department_id ? $department_id : "NULL") . ", status: " . $status);
+        
+        $query = "SELECT a.*, u.name as user_name, u.surname as user_surname, r.name as role_name, d.name as department_name, c.name as course_name 
+                 FROM " . $this->table_name . " a
+                 LEFT JOIN users u ON a.user_id = u.id
+                 LEFT JOIN roles r ON a.role_id = r.id
+                 LEFT JOIN departments d ON a.department_id = d.id
+                 LEFT JOIN courses c ON a.course_id = c.id
+                 WHERE a.status = :status 
+                 AND (a.role_id = :role_id OR a.role_id IS NULL)
+                 AND (
+                     a.department_id IS NULL 
+                     OR (:department_id IS NULL AND a.department_id IS NULL)
+                     OR (:department_id IS NOT NULL AND a.department_id = :department_id)
+                 )";
+        
+        // Add date constraints for active announcements for non-admin users
+        if ($status == 'active' && $role_id != ROLE_ADMIN) {
+            $query .= " AND (a.start_date IS NULL OR a.start_date <= NOW())
+                       AND (a.end_date IS NULL OR a.end_date >= NOW())";
+        }
+                 
+        $query .= " ORDER BY a.created_at DESC";
+        
+        $stmt = $this->conn->prepare($query);
+        
+        $stmt->bindParam(":role_id", $role_id);
+        $stmt->bindParam(":department_id", $department_id);
+        $stmt->bindParam(":status", $status);
+        
+        try {
+            $stmt->execute();
+        } catch (PDOException $e) {
+            error_log("Error executing query: " . $e->getMessage());
+        }
+        
+        return $stmt;
+    }
+
+    // Create announcement - role-based security is maintained here
     public function create() {
+        error_log("Creating new announcement: " . $this->title);
+        
         $query = "INSERT INTO " . $this->table_name . " 
                   SET title = :title,
                       content = :content,
@@ -103,14 +142,22 @@ class Announcement {
         $stmt->bindParam(":status", $this->status);
         
         // Execute query
-        if($stmt->execute()) {
-            return true;
+        try {
+            if($stmt->execute()) {
+                $this->id = $this->conn->lastInsertId();
+                error_log("Announcement created successfully with ID: " . $this->id);
+                return true;
+            } else {
+                error_log("Error creating announcement: " . print_r($stmt->errorInfo(), true));
+                return false;
+            }
+        } catch (PDOException $e) {
+            error_log("Exception creating announcement: " . $e->getMessage());
+            return false;
         }
-        
-        return false;
     }
 
-    // Read one announcement
+    // Read one announcement - available to all
     public function readOne() {
         $query = "SELECT a.*, u.name as user_name, u.surname as user_surname, 
                   r.name as role_name, d.name as department_name, c.name as course_name
@@ -152,7 +199,7 @@ class Announcement {
         return false;
     }
 
-    // Update announcement
+    // Update announcement - role check should happen in controller
     public function update() {
         $query = "UPDATE " . $this->table_name . " 
                   SET title = :title,
@@ -197,7 +244,7 @@ class Announcement {
         return false;
     }
 
-    // Delete announcement
+    // Delete announcement - role check should happen in controller
     public function delete() {
         $query = "DELETE FROM " . $this->table_name . " WHERE id = ?";
         
@@ -211,6 +258,26 @@ class Announcement {
         
         return false;
     }
+
+    // Read announcements by creator ID - allows users to see announcements they created
+    // Teachers will see all their own announcements regardless of dates
+    public function readByCreatorId($user_id, $status = 'active') {
+        $query = "SELECT a.*, u.name as user_name, u.surname as user_surname, 
+                  r.name as role_name, d.name as department_name, c.name as course_name 
+                  FROM " . $this->table_name . " a
+                  LEFT JOIN users u ON a.user_id = u.id
+                  LEFT JOIN roles r ON a.role_id = r.id
+                  LEFT JOIN departments d ON a.department_id = d.id
+                  LEFT JOIN courses c ON a.course_id = c.id
+                  WHERE a.user_id = ? AND a.status = ?
+                  ORDER BY a.created_at DESC";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(1, $user_id);
+        $stmt->bindParam(2, $status);
+        $stmt->execute();
+        
+        return $stmt;
+    }
 }
 ?>
-

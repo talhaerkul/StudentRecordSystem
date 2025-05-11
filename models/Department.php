@@ -8,7 +8,6 @@ class Department {
     public $id;
     public $name;
     public $code;
-    public $faculty_id;
     public $status;
     public $created_at;
     public $updated_at;
@@ -20,10 +19,8 @@ class Department {
 
     // Read all departments
     public function readAll() {
-        $query = "SELECT d.*, f.name as faculty_name
+        $query = "SELECT d.*
                   FROM " . $this->table_name . " d
-                  LEFT JOIN faculties f ON d.faculty_id = f.id
-                  WHERE d.status = 'active'
                   ORDER BY d.name ASC";
         
         $stmt = $this->conn->prepare($query);
@@ -37,26 +34,22 @@ class Department {
         $query = "INSERT INTO " . $this->table_name . " 
                   SET name = :name,
                       code = :code,
-                      faculty_id = :faculty_id,
-                      status = :status,
-                      created_at = NOW()";
+                      status = :status";
         
         $stmt = $this->conn->prepare($query);
         
         // Sanitize inputs
         $this->name = htmlspecialchars(strip_tags($this->name));
         $this->code = htmlspecialchars(strip_tags($this->code));
-        $this->faculty_id = htmlspecialchars(strip_tags($this->faculty_id));
         $this->status = htmlspecialchars(strip_tags($this->status));
         
         // Bind values
         $stmt->bindParam(":name", $this->name);
         $stmt->bindParam(":code", $this->code);
-        $stmt->bindParam(":faculty_id", $this->faculty_id);
         $stmt->bindParam(":status", $this->status);
         
         // Execute query
-        if($stmt->execute()) {
+        if ($stmt->execute()) {
             return true;
         }
         
@@ -65,9 +58,8 @@ class Department {
 
     // Read one department
     public function readOne() {
-        $query = "SELECT d.*, f.name as faculty_name
+        $query = "SELECT d.*
                   FROM " . $this->table_name . " d
-                  LEFT JOIN faculties f ON d.faculty_id = f.id
                   WHERE d.id = ?
                   LIMIT 0,1";
         
@@ -77,15 +69,12 @@ class Department {
         
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         
-        if($row) {
-            // Set properties
+        if ($row) {
             $this->name = $row['name'];
             $this->code = $row['code'];
-            $this->faculty_id = $row['faculty_id'];
-            $this->faculty_name = $row['faculty_name'];
             $this->status = $row['status'];
-            $this->created_at = $row['created_at'];
-            $this->updated_at = $row['updated_at'];
+            $this->created_at = isset($row['created_at']) ? $row['created_at'] : null;
+            $this->updated_at = isset($row['updated_at']) ? $row['updated_at'] : null;
             
             return true;
         }
@@ -95,12 +84,10 @@ class Department {
 
     // Update department
     public function update() {
-        $query = "UPDATE " . $this->table_name . " 
+        $query = "UPDATE " . $this->table_name . "
                   SET name = :name,
                       code = :code,
-                      faculty_id = :faculty_id,
-                      status = :status,
-                      updated_at = NOW()
+                      status = :status
                   WHERE id = :id";
         
         $stmt = $this->conn->prepare($query);
@@ -108,18 +95,17 @@ class Department {
         // Sanitize inputs
         $this->name = htmlspecialchars(strip_tags($this->name));
         $this->code = htmlspecialchars(strip_tags($this->code));
-        $this->faculty_id = htmlspecialchars(strip_tags($this->faculty_id));
         $this->status = htmlspecialchars(strip_tags($this->status));
+        $this->id = htmlspecialchars(strip_tags($this->id));
         
         // Bind values
         $stmt->bindParam(":name", $this->name);
         $stmt->bindParam(":code", $this->code);
-        $stmt->bindParam(":faculty_id", $this->faculty_id);
         $stmt->bindParam(":status", $this->status);
         $stmt->bindParam(":id", $this->id);
         
         // Execute query
-        if($stmt->execute()) {
+        if ($stmt->execute()) {
             return true;
         }
         

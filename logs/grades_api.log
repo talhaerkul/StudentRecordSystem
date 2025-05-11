@@ -1,0 +1,9 @@
+[2025-05-09 18:08:16] POST data received: {"course_id":"12","term_id":"4","grades":"{\"14\":\"15\"}"}
+[2025-05-09 18:08:16] Grades parsed: {"14":"15"}
+[2025-05-09 18:08:16] Exception: "SQLSTATE[42S22]: Column not found: 1054 Unknown column 'updated_at' in 'field list'"
+[2025-05-09 18:16:02] POST data received: {"course_id":"12","term_id":"4","grades":"{\"14\":\"15\"}"}
+[2025-05-09 18:16:02] Grades parsed: {"14":"15"}
+[2025-05-09 18:16:02] Grade update results: {"totalUpdates":1,"successCount":1,"errors":[]}
+[2025-05-09 18:17:22] POST data received: {"course_id":"12","term_id":"4","grades":"{\"14\":\"20\"}"}
+[2025-05-09 18:17:22] Grades parsed: {"14":"20"}
+[2025-05-09 18:17:22] Grade update results: {"totalUpdates":1,"successCount":1,"errors":[]}

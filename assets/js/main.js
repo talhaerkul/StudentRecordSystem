@@ -119,16 +119,11 @@ function validateForm(formId) {
   // Get the selected role_id
   var roleId = document.getElementById("role_id").value;
 
-  // If role_id is 4, check if the email ends with @stu.okan.edu.tr
+  // If role_id is 4, check if the email ends with @stu.uni.edu.tr
   if (roleId == 4) {
     for (var k = 0; k < emailFields.length; k++) {
-      if (
-        emailFields[k].value &&
-        !emailFields[k].value.endsWith("@stu.okan.edu.tr")
-      ) {
-        alert(
-          "Öğrenciler için e-posta adresi @stu.okan.edu.tr ile bitmelidir."
-        );
+      if (emailFields[k].value && !emailFields[k].value.endsWith("@stu.uni.edu.tr")) {
+        alert("Öğrenciler için e-posta adresi @stu.uni.edu.tr ile bitmelidir.");
         emailFields[k].focus();
         return false;
       }
@@ -142,11 +137,7 @@ function validateForm(formId) {
     var specialization = document.getElementById("specialization");
     var phone = document.getElementById("phone");
 
-    if (
-      !title.value.trim() ||
-      !specialization.value.trim() ||
-      !phone.value.trim()
-    ) {
+    if (!title.value.trim() || !specialization.value.trim() || !phone.value.trim()) {
       alert("Lütfen tüm öğretmen bilgilerini doldurunuz.");
       return false;
     }
@@ -155,16 +146,9 @@ function validateForm(formId) {
     var studentId = document.getElementById("student_id");
     var birthdate = document.getElementById("birthdate");
     var address = document.getElementById("address");
-    var advisorId = document.getElementById("advisor_id");
     var entryYear = document.getElementById("entry_year");
 
-    if (
-      !studentId.value.trim() ||
-      !birthdate.value.trim() ||
-      !address.value.trim() ||
-      !advisorId.value.trim() ||
-      !entryYear.value.trim()
-    ) {
+    if (!studentId.value.trim() || !birthdate.value.trim() || !address.value.trim() || !entryYear.value.trim()) {
       alert("Lütfen tüm öğrenci bilgilerini doldurunuz.");
       return false;
     }

@@ -1,12 +1,12 @@
 <?php
 // Include necessary files
-require_once 'config/config.php';
-require_once 'controllers/AuthController.php';
-require_once 'models/Department.php';
+require_once '../../config/config.php';
+require_once '../../controllers/AuthController.php';
+require_once '../../models/Department.php';
 
 // Check if user is already logged in
 if(isset($_SESSION['user_id'])) {
-    header("Location: dashboard.php");
+    header("Location: " . url('/pages/dashboard.php'));
     exit;
 }
 
@@ -23,28 +23,29 @@ if($_SERVER["REQUEST_METHOD"] == "POST") {
     if($auth->register($_POST)) {
         $_SESSION['alert'] = "Kayıt işlemi başarıyla tamamlandı. Lütfen giriş yapınız.";
         $_SESSION['alert_type'] = "success";
-        header("Location: login.php");
+        header("Location: " . url('/pages/auth/login.php'));
         exit;
     }
 }
 
 // Include header
-require_once 'includes/header.php';
+// İçerik oluştur
+ob_start();
 ?>
 
 <div class="row justify-content-center">
     <div class="col-md-8">
         <div class="card shadow mt-4 mb-4">
             <div class="card-header bg-primary text-white text-center">
-                <h4 class="mb-0">Okan Üniversitesi Öğrenci Bilgi Sistemi</h4>
+                <h4 class="mb-0">UniTrackSIS Öğrenci Bilgi Sistemi</h4>
             </div>
             <div class="card-body">
                 <div class="text-center mb-4">
-                    <img src="assets/img/logo.png" alt="Okan Üniversitesi Logo" class="img-fluid mb-3" style="max-height: 100px;">
+                    <img src="../../assets/logo.png" alt="Logo" class="img-fluid mb-3" style="max-height: 100px;">
                     <h5>Yeni Hesap Oluştur</h5>
                 </div>
                 
-                <form action="register.php" method="POST">
+                <form action="<?php echo url('/pages/auth/register.php'); ?>" method="POST">
                     <div class="row">
                         <div class="col-md-6">
                             <div class="form-group">
@@ -65,8 +66,8 @@ require_once 'includes/header.php';
                         <label for="email"><i class="fas fa-envelope"></i> E-posta</label>
                         <input type="email" class="form-control" id="email" name="email" value="<?php echo $_POST['email'] ?? ''; ?>" required>
                         <small class="form-text text-muted">
-                            Öğretmenler için: @okan.edu.tr<br>
-                            Öğrenciler için: @stu.okan.edu.tr
+                            Öğretmenler için: @uni.edu.tr<br>
+                            Öğrenciler için: @stu.uni.edu.tr
                         </small>
                     </div>
                     
@@ -126,7 +127,7 @@ require_once 'includes/header.php';
                 </form>
             </div>
             <div class="card-footer text-center">
-                <p class="mb-0">Zaten hesabınız var mı? <a href="login.php">Giriş Yap</a></p>
+                <p class="mb-0">Zaten hesabınız var mı? <a href="<?php echo url('/pages/auth/login.php'); ?>">Giriş Yap</a></p>
             </div>
         </div>
     </div>
@@ -143,9 +144,9 @@ require_once 'includes/header.php';
                 </button>
             </div>
             <div class="modal-body">
-                <h5>Okan Üniversitesi Öğrenci Bilgi Sistemi Kullanım Koşulları</h5>
+                <h5>UniTrackSIS Öğrenci Bilgi Sistemi Kullanım Koşulları</h5>
                 <p>
-                    Bu sistem, Okan Üniversitesi'nin öğrenci ve öğretim elemanları için tasarlanmıştır. 
+                    Bu sistem, Üniversite'nin öğrenci ve öğretim elemanları için tasarlanmıştır. 
                     Sistemi kullanarak aşağıdaki koşulları kabul etmiş sayılırsınız.
                 </p>
                 
@@ -169,7 +170,7 @@ require_once 'includes/header.php';
                 
                 <h6>4. Sorumluluk Reddi</h6>
                 <p>
-                    Sistem üzerinde oluşabilecek teknik arızalardan ve bunların sonuçlarından Okan Üniversitesi sorumlu tutulamaz. 
+                    Sistem üzerinde oluşabilecek teknik arızalardan ve bunların sonuçlarından Üniversite sorumlu tutulamaz. 
                     Önemli işlemlerinizi sistem üzerinden yaparken gerekli önlemleri almanız tavsiye edilir.
                 </p>
             </div>
@@ -206,7 +207,10 @@ document.addEventListener('DOMContentLoaded', function() {
 </script>
 
 <?php
-// Include footer
-require_once 'includes/footer.php';
+// İçeriği al
+$content = ob_get_clean();
+
+// Layout'u dahil et
+require_once '../../includes/layout.php';
 ?>
 

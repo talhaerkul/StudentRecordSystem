@@ -1,82 +1,122 @@
 <?php
 class Scholarship {
-    // Veritabanı bağlantısı ve tablo adı
+    // Database connection and table name
     private $conn;
     private $table_name = "scholarships";
 
-    // Nesne özellikleri
+    // Object properties
     public $id;
     public $name;
+    public $description;
     public $amount;
+    public $created_at;
+    public $updated_at;
 
-    // Constructor
+    // Constructor with $db as database connection
     public function __construct($db) {
         $this->conn = $db;
     }
 
-    // Tüm bursları getir
+    // Read all scholarships
     public function readAll() {
-        $query = "SELECT id, name, amount FROM " . $this->table_name . " ORDER BY name ASC";
+        $query = "SELECT * FROM " . $this->table_name . " ORDER BY name";
         $stmt = $this->conn->prepare($query);
         $stmt->execute();
         return $stmt;
     }
 
-    // Belirli bir bursu getir
+    // Read one scholarship
     public function readOne() {
-        $query = "SELECT id, name, amount FROM " . $this->table_name . " WHERE id = ? LIMIT 0,1";
+        $query = "SELECT * FROM " . $this->table_name . " WHERE id = ? LIMIT 0,1";
         $stmt = $this->conn->prepare($query);
         $stmt->bindParam(1, $this->id);
         $stmt->execute();
+        
         $row = $stmt->fetch(PDO::FETCH_ASSOC);
         
         if ($row) {
             $this->name = $row['name'];
+            $this->description = $row['description'];
             $this->amount = $row['amount'];
+            $this->created_at = $row['created_at'];
+            $this->updated_at = $row['updated_at'];
+            return true;
         }
+        
+        return false;
     }
 
-    // Yeni burs ekle
+    // Create scholarship
     public function create() {
-        $query = "INSERT INTO " . $this->table_name . " SET name = :name, amount = :amount";
+        $query = "INSERT INTO " . $this->table_name . " 
+                  SET name = :name, description = :description, amount = :amount";
+        
         $stmt = $this->conn->prepare($query);
         
-        // Verileri temizle
+        // Sanitize input
         $this->name = htmlspecialchars(strip_tags($this->name));
+        $this->description = htmlspecialchars(strip_tags($this->description));
         $this->amount = htmlspecialchars(strip_tags($this->amount));
         
-        // Parametreleri bağla
+        // Bind values
         $stmt->bindParam(":name", $this->name);
+        $stmt->bindParam(":description", $this->description);
         $stmt->bindParam(":amount", $this->amount);
         
-        return $stmt->execute();
+        // Execute query
+        if ($stmt->execute()) {
+            return true;
+        }
+        
+        return false;
     }
 
-    // Burs güncelle
+    // Update scholarship
     public function update() {
-        $query = "UPDATE " . $this->table_name . " SET name = :name, amount = :amount WHERE id = :id";
+        $query = "UPDATE " . $this->table_name . " 
+                  SET name = :name, description = :description, amount = :amount 
+                  WHERE id = :id";
+        
         $stmt = $this->conn->prepare($query);
         
+        // Sanitize input
         $this->name = htmlspecialchars(strip_tags($this->name));
+        $this->description = htmlspecialchars(strip_tags($this->description));
         $this->amount = htmlspecialchars(strip_tags($this->amount));
         $this->id = htmlspecialchars(strip_tags($this->id));
         
+        // Bind values
         $stmt->bindParam(":name", $this->name);
+        $stmt->bindParam(":description", $this->description);
         $stmt->bindParam(":amount", $this->amount);
         $stmt->bindParam(":id", $this->id);
         
-        return $stmt->execute();
+        // Execute query
+        if ($stmt->execute()) {
+            return true;
+        }
+        
+        return false;
     }
 
-    // Burs sil
+    // Delete scholarship
     public function delete() {
         $query = "DELETE FROM " . $this->table_name . " WHERE id = ?";
+        
         $stmt = $this->conn->prepare($query);
         
+        // Sanitize input
         $this->id = htmlspecialchars(strip_tags($this->id));
+        
+        // Bind parameter
         $stmt->bindParam(1, $this->id);
         
-        return $stmt->execute();
+        // Execute query
+        if ($stmt->execute()) {
+            return true;
+        }
+        
+        return false;
     }
 }
 ?>

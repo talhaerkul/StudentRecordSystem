@@ -1,116 +1,201 @@
-<?php
-require_once 'config/config.php';
-?>
-<!DOCTYPE html>
-<html lang="tr">
-<head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <title><?php echo SITE_NAME; ?></title>
-    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.1/css/all.min.css" />
-    <link rel="stylesheet" href="assets/css/style.css" />
-</head>
-<body>
-    <?php if(isset($_SESSION['user_id']) && isset($_SESSION['role'])): ?>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
-        <div class="container">
-            <a class="navbar-brand" href="dashboard.php">Okan ÖBS</a>
-            <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav">
-                <span class="navbar-toggler-icon"></span>
-            </button>
-            <div class="collapse navbar-collapse" id="navbarNav">
-                <ul class="navbar-nav mr-auto">
+<?php if(isset($_SESSION['user_id']) && isset($_SESSION['role'])): ?>
+<!-- Özel header CSS'i -->
+<style>
+/* Navbar stilleri - sadece header için */
+.navbar {
+    padding: 0.8rem 0;
+}
+
+.navbar-brand {
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    padding: 0.5rem 1rem;
+    margin-right: 2rem;
+    position: relative;
+    left: 0;
+}
+
+.nav-item {
+    margin: 0 6px;
+    transition: all 0.2s ease;
+}
+
+.nav-link {
+    padding: 0.6rem 0.8rem;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+}
+
+.nav-link:hover {
+    background-color: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+.nav-link i {
+    margin-right: 6px;
+}
+
+.right-nav {
+    margin-left: auto;
+}
+
+.text-danger:hover {
+    background-color: rgba(220, 53, 69, 0.2);
+}
+
+/* Mobil görünüm için */
+@media (max-width: 991px) {
+    .navbar-content {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .navbar-nav {
+        flex-direction: column;
+        width: 100%;
+        margin: 0.5rem 0;
+    }
+
+    .right-nav {
+        margin-top: 1rem;
+        width: 100%;
+        display: flex;
+        justify-content: flex-start;
+        padding-top: 0.5rem;
+        border-top: 1px solid rgba(255, 255, 255, 0.2);
+    }
+
+    .nav-item {
+        margin: 3px 0;
+        width: 100%;
+    }
+
+    .nav-link {
+        width: 100%;
+        display: block;
+        padding: 0.75rem 1rem;
+    }
+}
+</style>
+
+<nav class="navbar navbar-dark bg-gradient-to-r from-purple-800 to-indigo-700 shadow-md">
+    <div class="container">
+        <div class="d-flex w-100 align-items-center">
+            <a class="navbar-brand" href="<?php echo url('/pages/dashboard.php'); ?>">UniTrackSIS</a>
+
+            <div class="navbar-content d-flex w-100">
+                <ul class="navbar-nav d-flex flex-row flex-wrap mr-auto">
                     <li class="nav-item">
-                        <a class="nav-link" href="dashboard.php"><i class="fas fa-home"></i> Ana Sayfa</a>
+                        <a class="nav-link" href="<?php echo url('/pages/dashboard.php'); ?>">
+                            <i class="fas fa-home mr-1"></i> Dashboard
+                        </a>
                     </li>
-                    
+
                     <?php if($_SESSION['role'] == ROLE_ADMIN): ?>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="adminDropdown" role="button" data-toggle="dropdown">
-                            <i class="fas fa-user-shield"></i> Admin
-                        </a>
-                        <div class="dropdown-menu">
-                            <a class="dropdown-item" href="users.php"><i class="fas fa-users"></i> Kullanıcılar</a>
-                            <a class="dropdown-item" href="departments.php"><i class="fas fa-building"></i> Bölümler</a>
-                            <a class="dropdown-item" href="terms.php"><i class="fas fa-calendar-alt"></i> Dönemler</a>
-                            <a class="dropdown-item" href="announcements.php"><i class="fas fa-bullhorn"></i> Duyurular</a>
-                        </div>
-                    </li>
-                    <?php endif; ?>
-                    
-                    <?php if($_SESSION['role'] == ROLE_ADMIN || $_SESSION['role'] == ROLE_STUDENT_AFFAIRS): ?>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="studentAffairsDropdown" role="button" data-toggle="dropdown">
-                            <i class="fas fa-graduation-cap"></i> Öğrenci İşleri
-                        </a>
-                        <div class="dropdown-menu">
-                            <a class="dropdown-item" href="students.php"><i class="fas fa-user-graduate"></i> Öğrenciler</a>
-                            <a class="dropdown-item" href="courses.php"><i class="fas fa-book"></i> Dersler</a>
-                            <a class="dropdown-item" href="course_schedule.php"><i class="fas fa-calendar"></i> Ders Programı</a>
-                            <a class="dropdown-item" href="assign_courses.php"><i class="fas fa-tasks"></i> Ders Atama</a>
-                        </div>
-                    </li>
-                    <?php endif; ?>
-                    
-                    <?php if($_SESSION['role'] == ROLE_TEACHER): ?>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="teacherDropdown" role="button" data-toggle="dropdown">
-                            <i class="fas fa-chalkboard-teacher"></i> Öğretmen
-                        </a>
-                        <div class="dropdown-menu">
-                            <a class="dropdown-item" href="my_courses.php"><i class="fas fa-book"></i> Derslerim</a>
-                            <a class="dropdown-item" href="my_students.php"><i class="fas fa-user-graduate"></i> Öğrencilerim</a>
-                            <a class="dropdown-item" href="grades.php"><i class="fas fa-clipboard-check"></i> Not Girişi</a>
-                            <a class="dropdown-item" href="teacher_announcements.php"><i class="fas fa-bullhorn"></i> Duyurularım</a>
-                        </div>
-                    </li>
-                    <?php endif; ?>
-                    
-                    <?php if($_SESSION['role'] == ROLE_STUDENT): ?>
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="studentDropdown" role="button" data-toggle="dropdown">
-                            <i class="fas fa-user-graduate"></i> Öğrenci
-                        </a>
-                        <div class="dropdown-menu">
-                            <a class="dropdown-item" href="enrolled_courses.php"><i class="fas fa-book"></i> Aldığım Dersler</a>
-                            <a class="dropdown-item" href="transcript.php"><i class="fas fa-file-alt"></i> Transkript</a>
-                            <a class="dropdown-item" href="course_schedule_view.php"><i class="fas fa-calendar"></i> Ders Programı</a>
-                        </div>
-                    </li>
-                    <?php endif; ?>
-                    
                     <li class="nav-item">
-                        <a class="nav-link" href="view_announcements.php"><i class="fas fa-bullhorn"></i> Duyurular</a>
+                        <a class="nav-link" href="<?php echo url('/pages/auth/users.php'); ?>">
+                            <i class="fas fa-users mr-1"></i> Kullanıcılar
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="<?php echo url('/pages/department/departments.php'); ?>">
+                            <i class="fas fa-building mr-1"></i> Bölümler
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="<?php echo url('/pages/term/terms.php'); ?>">
+                            <i class="fas fa-calendar-alt mr-1"></i> Dönemler
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="<?php echo url('/pages/grade/admin_grade_scales.php'); ?>">
+                            <i class="fas fa-chart-bar mr-1"></i> Not Ölçekleri
+                        </a>
+                    </li>
+                    <?php endif; ?>
+
+                    <?php if($_SESSION['role'] == ROLE_ADMIN || $_SESSION['role'] == ROLE_STUDENT_AFFAIRS): ?>
+                    <li class="nav-item">
+                        <a class="nav-link" href="<?php echo url('/pages/students.php'); ?>">
+                            <i class="fas fa-user-graduate mr-1"></i> Öğrenciler
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="<?php echo url('/pages/course/courses.php'); ?>">
+                            <i class="fas fa-book mr-1"></i> Dersler
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="<?php echo url('/pages/course/course_schedule.php'); ?>">
+                            <i class="fas fa-calendar mr-1"></i> Ders Programı
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="<?php echo url('/pages/course/assign_courses.php'); ?>">
+                            <i class="fas fa-tasks mr-1"></i> Ders Atama
+                        </a>
+                    </li>
+                    <?php endif; ?>
+
+                    <?php if($_SESSION['role'] == ROLE_TEACHER): ?>
+                    <li class="nav-item">
+                        <a class="nav-link" href="<?php echo url('/pages/course/my_courses.php'); ?>">
+                            <i class="fas fa-book mr-1"></i> Derslerim
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="<?php echo url('/pages/course/my_students.php'); ?>">
+                            <i class="fas fa-user-graduate mr-1"></i> Öğrencilerim
+                        </a>
+                    </li>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="<?php echo url('/pages/grade/course_grade_scales.php'); ?>">
+                            <i class="fas fa-chart-bar mr-1"></i> Not Ölçekleri
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="<?php echo url('/pages/announcement/teacher_announcements.php'); ?>">
+                            <i class="fas fa-bullhorn mr-1"></i> Duyurularım
+                        </a>
+                    </li>
+                    <?php endif; ?>
+
+                    <?php if($_SESSION['role'] == ROLE_STUDENT): ?>
+                    <li class="nav-item">
+                        <a class="nav-link" href="<?php echo url('/pages/course/enrolled_courses.php'); ?>">
+                            <i class="fas fa-book mr-1"></i> Aldığım Dersler
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="<?php echo url('/pages/transcript/transcript.php'); ?>">
+                            <i class="fas fa-file-alt mr-1"></i> Transkript
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="<?php echo url('/pages/course/course_schedule.php'); ?>">
+                            <i class="fas fa-calendar mr-1"></i> Ders Programı
+                        </a>
+                    </li>
+                    <?php endif; ?>
+
+                    <li class="nav-item">
+                        <a class="nav-link" href="<?php echo url('/pages/announcement/announcements.php'); ?>">
+                            <i class="fas fa-bullhorn mr-1"></i> Duyurular
+                        </a>
                     </li>
                 </ul>
-                <ul class="navbar-nav">
-                    <li class="nav-item dropdown">
-                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-toggle="dropdown">
-                            <i class="fas fa-user-circle"></i> <?php echo $_SESSION['name']; ?>
+                <ul class="navbar-nav right-nav d-flex flex-row">
+
+
+                    <li class="nav-item">
+                        <a class="nav-link text-danger" href="<?php echo url('/pages/auth/logout.php'); ?>">
+                            <i class="fas fa-sign-out-alt mr-1"></i> Çıkış
                         </a>
-                        <div class="dropdown-menu dropdown-menu-right">
-                            <a class="dropdown-item" href="profile.php"><i class="fas fa-id-card"></i> Profil</a>
-                            <a class="dropdown-item" href="change_password.php"><i class="fas fa-key"></i> Şifre Değiştir</a>
-                            <div class="dropdown-divider"></div>
-                            <a class="dropdown-item" href="logout.php"><i class="fas fa-sign-out-alt"></i> Çıkış</a>
-                        </div>
                     </li>
                 </ul>
             </div>
         </div>
-    </nav>
-    <?php endif; ?>
-    
-    <div class="container mt-4">
-        <?php if(isset($_SESSION['alert'])): ?>
-            <div class="alert alert-<?php echo $_SESSION['alert_type']; ?> alert-dismissible fade show">
-                <?php echo $_SESSION['alert']; ?>
-                <button type="button" class="close" data-dismiss="alert">&times;</button>
-            </div>
-            <?php
-            unset($_SESSION['alert']);
-            unset($_SESSION['alert_type']);
-            ?>
-        <?php endif; ?>
-
+    </div>
+</nav>
+<?php endif; ?>

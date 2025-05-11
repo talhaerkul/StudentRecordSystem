@@ -11,6 +11,7 @@ class Course {
     public $description;
     public $credit;
     public $department_id;
+    public $year;
     public $hours_per_week;
     public $status;
     public $created_at;
@@ -34,6 +35,107 @@ class Course {
         return $stmt;
     }
 
+    // Read only active courses
+    public function readActive() {
+        $query = "SELECT c.*, d.name as department_name
+                  FROM " . $this->table_name . " c
+                  LEFT JOIN departments d ON c.department_id = d.id
+                  WHERE c.status = 'active'
+                  ORDER BY c.code ASC";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        
+        return $stmt;
+    }
+
+    // Read all courses with pagination
+    public function readAllPaginated($page = 1, $records_per_page = 10) {
+        // Calculate the starting position
+        $start = ($page - 1) * $records_per_page;
+        
+        $query = "SELECT c.*, d.name as department_name
+                  FROM " . $this->table_name . " c
+                  LEFT JOIN departments d ON c.department_id = d.id
+                  ORDER BY c.code ASC
+                  LIMIT ?, ?";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(1, $start, PDO::PARAM_INT);
+        $stmt->bindParam(2, $records_per_page, PDO::PARAM_INT);
+        $stmt->execute();
+        
+        return $stmt;
+    }
+    
+    // Read active courses with pagination
+    public function readActivePaginated($page = 1, $records_per_page = 10) {
+        // Calculate the starting position
+        $start = ($page - 1) * $records_per_page;
+        
+        $query = "SELECT c.*, d.name as department_name
+                  FROM " . $this->table_name . " c
+                  LEFT JOIN departments d ON c.department_id = d.id
+                  WHERE c.status = 'active'
+                  ORDER BY c.code ASC
+                  LIMIT ?, ?";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(1, $start, PDO::PARAM_INT);
+        $stmt->bindParam(2, $records_per_page, PDO::PARAM_INT);
+        $stmt->execute();
+        
+        return $stmt;
+    }
+    
+    // Count total records for pagination
+    public function countAll() {
+        $query = "SELECT COUNT(*) as total FROM " . $this->table_name;
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row['total'];
+    }
+    
+    // Count active records for pagination
+    public function countActive() {
+        $query = "SELECT COUNT(*) as total FROM " . $this->table_name . " WHERE status = 'active'";
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        $row = $stmt->fetch(PDO::FETCH_ASSOC);
+        return $row['total'];
+    }
+
+    // Read courses by department
+    public function readByDepartment($department_id) {
+        $query = "SELECT c.*, d.name as department_name
+                  FROM " . $this->table_name . " c
+                  LEFT JOIN departments d ON c.department_id = d.id
+                  WHERE c.department_id = ?
+                  ORDER BY c.code ASC";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(1, $department_id);
+        $stmt->execute();
+        
+        return $stmt;
+    }
+
+    // Read active courses by department
+    public function readActiveByDepartment($department_id) {
+        $query = "SELECT c.*, d.name as department_name
+                  FROM " . $this->table_name . " c
+                  LEFT JOIN departments d ON c.department_id = d.id
+                  WHERE c.department_id = ? AND c.status = 'active'
+                  ORDER BY c.code ASC";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bindParam(1, $department_id);
+        $stmt->execute();
+        
+        return $stmt;
+    }
+
     // Create course
     public function create() {
         $query = "INSERT INTO " . $this->table_name . " 
@@ -42,6 +144,7 @@ class Course {
                       description = :description,
                       credit = :credit,
                       department_id = :department_id,
+                      year = :year,
                       hours_per_week = :hours_per_week,
                       status = :status,
                       created_at = NOW()";
@@ -54,6 +157,7 @@ class Course {
         $this->description = htmlspecialchars(strip_tags($this->description));
         $this->credit = htmlspecialchars(strip_tags($this->credit));
         $this->department_id = htmlspecialchars(strip_tags($this->department_id));
+        $this->year = htmlspecialchars(strip_tags($this->year));
         $this->hours_per_week = htmlspecialchars(strip_tags($this->hours_per_week));
         $this->status = htmlspecialchars(strip_tags($this->status));
         
@@ -63,6 +167,7 @@ class Course {
         $stmt->bindParam(":description", $this->description);
         $stmt->bindParam(":credit", $this->credit);
         $stmt->bindParam(":department_id", $this->department_id);
+        $stmt->bindParam(":year", $this->year);
         $stmt->bindParam(":hours_per_week", $this->hours_per_week);
         $stmt->bindParam(":status", $this->status);
         
@@ -96,6 +201,7 @@ class Course {
             $this->credit = $row['credit'];
             $this->department_id = $row['department_id'];
             $this->department_name = $row['department_name'];
+            $this->year = $row['year'];
             $this->hours_per_week = $row['hours_per_week'];
             $this->status = $row['status'];
             $this->created_at = $row['created_at'];
@@ -115,6 +221,7 @@ class Course {
                       description = :description,
                       credit = :credit,
                       department_id = :department_id,
+                      year = :year,
                       hours_per_week = :hours_per_week,
                       status = :status,
                       updated_at = NOW()
@@ -128,6 +235,7 @@ class Course {
         $this->description = htmlspecialchars(strip_tags($this->description));
         $this->credit = htmlspecialchars(strip_tags($this->credit));
         $this->department_id = htmlspecialchars(strip_tags($this->department_id));
+        $this->year = htmlspecialchars(strip_tags($this->year));
         $this->hours_per_week = htmlspecialchars(strip_tags($this->hours_per_week));
         $this->status = htmlspecialchars(strip_tags($this->status));
         
@@ -137,6 +245,7 @@ class Course {
         $stmt->bindParam(":description", $this->description);
         $stmt->bindParam(":credit", $this->credit);
         $stmt->bindParam(":department_id", $this->department_id);
+        $stmt->bindParam(":year", $this->year);
         $stmt->bindParam(":hours_per_week", $this->hours_per_week);
         $stmt->bindParam(":status", $this->status);
         $stmt->bindParam(":id", $this->id);
@@ -169,8 +278,14 @@ class Course {
         $query = "SELECT id FROM " . $this->table_name . " WHERE code = ? AND id != ?";
         
         $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(1, $this->code);
-        $stmt->bindParam(2, $this->id ? $this->id : 0);
+        
+        // Değişkenleri oluştur
+        $code = $this->code;
+        $id_value = $this->id ? $this->id : 0;
+        
+        // Değişkenleri referans olarak bindParam'a geçir
+        $stmt->bindParam(1, $code);
+        $stmt->bindParam(2, $id_value);
         $stmt->execute();
         
         if($stmt->rowCount() > 0) {
@@ -182,6 +297,22 @@ class Course {
     
     // Assign course to teacher
     public function assignToTeacher($teacher_id, $term_id) {
+        // First check if both course and term are active
+        $query = "SELECT c.id as course_id, t.id as term_id 
+                  FROM " . $this->table_name . " c
+                  JOIN terms t ON t.id = ?
+                  WHERE c.id = ? AND c.status = 'active' AND t.status = 'active'";
+        
+        $checkStmt = $this->conn->prepare($query);
+        $checkStmt->bindParam(1, $term_id);
+        $checkStmt->bindParam(2, $this->id);
+        $checkStmt->execute();
+        
+        if($checkStmt->rowCount() == 0) {
+            // Either course or term is inactive
+            return false;
+        }
+        
         $query = "INSERT INTO teacher_courses (teacher_id, course_id, term_id, created_at)
                   VALUES (?, ?, ?, NOW())";
                   
@@ -216,6 +347,22 @@ class Course {
     
     // Enroll student in course
     public function enrollStudent($student_id, $term_id) {
+        // First check if both course and term are active
+        $query = "SELECT c.id as course_id, t.id as term_id 
+                  FROM " . $this->table_name . " c
+                  JOIN terms t ON t.id = ?
+                  WHERE c.id = ? AND c.status = 'active' AND t.status = 'active'";
+        
+        $checkStmt = $this->conn->prepare($query);
+        $checkStmt->bindParam(1, $term_id);
+        $checkStmt->bindParam(2, $this->id);
+        $checkStmt->execute();
+        
+        if($checkStmt->rowCount() == 0) {
+            // Either course or term is inactive
+            return false;
+        }
+        
         $query = "INSERT INTO student_courses (student_id, course_id, term_id, status, created_at)
                   VALUES (?, ?, ?, 'active', NOW())";
                   
@@ -233,21 +380,51 @@ class Course {
     
     // Update student grade
     public function updateStudentGrade($student_id, $term_id, $grade) {
-        $query = "UPDATE student_courses
-                  SET grade = ?, updated_at = NOW()
-                  WHERE student_id = ? AND course_id = ? AND term_id = ?";
-                  
-        $stmt = $this->conn->prepare($query);
-        $stmt->bindParam(1, $grade);
-        $stmt->bindParam(2, $student_id);
-        $stmt->bindParam(3, $this->id);
-        $stmt->bindParam(4, $term_id);
-        
-        if($stmt->execute()) {
-            return true;
+        try {
+            // First check if both course and term are active
+            $checkQuery = "SELECT c.id as course_id, t.id as term_id 
+                      FROM " . $this->table_name . " c
+                      JOIN terms t ON t.id = ?
+                      WHERE c.id = ? AND c.status = 'active' AND t.status = 'active'";
+            
+            $checkStmt = $this->conn->prepare($checkQuery);
+            $checkStmt->bindParam(1, $term_id);
+            $checkStmt->bindParam(2, $this->id);
+            $checkStmt->execute();
+            
+            if($checkStmt->rowCount() == 0) {
+                // Either course or term is inactive
+                return false;
+            }
+            
+            // First, check if updated_at column exists in the student_courses table
+            $columnCheckQuery = "SHOW COLUMNS FROM student_courses LIKE 'updated_at'";
+            $columnCheckStmt = $this->conn->query($columnCheckQuery);
+            
+            if ($columnCheckStmt->rowCount() > 0) {
+                // Use query with updated_at if the column exists
+                $query = "UPDATE student_courses
+                          SET grade = ?, updated_at = NOW()
+                          WHERE student_id = ? AND course_id = ? AND term_id = ?";
+            } else {
+                // Use query without updated_at if the column doesn't exist
+                $query = "UPDATE student_courses
+                          SET grade = ?
+                          WHERE student_id = ? AND course_id = ? AND term_id = ?";
+            }
+            
+            $stmt = $this->conn->prepare($query);
+            $stmt->bindParam(1, $grade);
+            $stmt->bindParam(2, $student_id);
+            $stmt->bindParam(3, $this->id);
+            $stmt->bindParam(4, $term_id);
+            
+            return $stmt->execute();
+        } catch (PDOException $e) {
+            // Log error but don't expose PDO exceptions directly
+            error_log("Grade update error: " . $e->getMessage());
+            return false;
         }
-        
-        return false;
     }
     
     // Get course schedule

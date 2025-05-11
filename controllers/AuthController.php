@@ -1,7 +1,7 @@
 <?php
-// Include necessary files
-require_once 'config/database.php';
-require_once 'models/User.php';
+// Include necessary files with absolute paths
+require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../models/User.php';
 
 class AuthController {
     private $db;
@@ -11,13 +11,41 @@ class AuthController {
         $database = new Database();
         $this->db = $database->getConnection();
         $this->user = new User($this->db);
+        
+        // Initialize session security
+        $this->initSessionSecurity();
+    }
+
+    // Initialize session security
+    private function initSessionSecurity() {
+        // Start session if not already started
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+        
+        // Regenerate session ID periodically
+        if (!isset($_SESSION['last_regeneration']) || 
+            time() - $_SESSION['last_regeneration'] > 1800) { // 30 minutes
+            session_regenerate_id(true);
+            $_SESSION['last_regeneration'] = time();
+        }
     }
 
     // Login function
-    public function login($email, $password) {
+    public function login($email, $password, $remember = false) {
+        // Check for brute force attempts
+        if ($this->isBruteForce($email)) {
+            $_SESSION['alert'] = "Çok fazla başarısız giriş denemesi. Lütfen daha sonra tekrar deneyin.";
+            $_SESSION['alert_type'] = "danger";
+            return false;
+        }
+        
         // Set properties
         $this->user->email = $email;
         $this->user->password = $password;
+        
+        // Debug: Log login attempt
+        error_log("Login attempt for: $email with password: $password");
         
         // Attempt login
         if($this->user->login()) {
@@ -29,19 +57,108 @@ class AuthController {
             $_SESSION['role_name'] = $this->user->role_name;
             $_SESSION['department_id'] = $this->user->department_id;
             $_SESSION['department_name'] = $this->user->department_name;
+            $_SESSION['last_activity'] = time();
+            
+            // Debug: Log successful login
+            error_log("User logged in successfully: {$this->user->id} - {$this->user->name} {$this->user->surname}");
+            
+            // Set remember me cookie if requested
+            if ($remember) {
+                $this->setRememberMeCookie($this->user->id);
+            }
             
             // Set student/teacher specific data
             if($this->user->role_id == ROLE_STUDENT) {
-                    $_SESSION['student_id'] = $this->user->id;
-                    $_SESSION['student_number'] = $this->user->student_id;
+                $_SESSION['student_id'] = $this->user->id;
+                $_SESSION['student_number'] = $this->user->student_id;
             } else if($this->user->role_id == ROLE_TEACHER) {
-                    $_SESSION['teacher_id'] = $this->user->id;
+                $_SESSION['teacher_id'] = $this->user->id;
             }
+            
+            // Clear failed login attempts
+            $this->clearFailedAttempts($email);
             
             return true;
         }
         
+        // Debug: Log failed login
+        error_log("Login failed for: $email - Password verification failed");
+        
+        // Record failed login attempt
+        $this->recordFailedAttempt($email);
+        
         return false;
+    }
+
+    // Check for brute force attempts
+    private function isBruteForce($email) {
+        try {
+            $query = "SELECT COUNT(*) as attempts FROM login_attempts 
+                     WHERE email = :email AND timestamp > DATE_SUB(NOW(), INTERVAL 15 MINUTE)";
+            
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(":email", $email);
+            $stmt->execute();
+            
+            $row = $stmt->fetch(PDO::FETCH_ASSOC);
+            return $row['attempts'] >= 5; // Allow 5 attempts in 15 minutes
+        } catch (PDOException $e) {
+            // If table doesn't exist, return false (no brute force check)
+            if ($e->getCode() == '42S02') { // Table doesn't exist
+                return false;
+            }
+            throw $e;
+        }
+    }
+
+    // Record failed login attempt
+    private function recordFailedAttempt($email) {
+        try {
+            $query = "INSERT INTO login_attempts (email, timestamp) VALUES (:email, NOW())";
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(":email", $email);
+            $stmt->execute();
+        } catch (PDOException $e) {
+            // If table doesn't exist, silently fail
+            if ($e->getCode() == '42S02') { // Table doesn't exist
+                return;
+            }
+            throw $e;
+        }
+    }
+
+    // Clear failed login attempts
+    private function clearFailedAttempts($email) {
+        try {
+            $query = "DELETE FROM login_attempts WHERE email = :email";
+            $stmt = $this->db->prepare($query);
+            $stmt->bindParam(":email", $email);
+            $stmt->execute();
+        } catch (PDOException $e) {
+            // If table doesn't exist, silently fail
+            if ($e->getCode() == '42S02') { // Table doesn't exist
+                return;
+            }
+            throw $e;
+        }
+    }
+
+    // Set remember me cookie
+    private function setRememberMeCookie($user_id) {
+        $token = bin2hex(random_bytes(32));
+        $expiry = time() + (30 * 24 * 60 * 60); // 30 days
+        
+        // Store token in database
+        $query = "INSERT INTO remember_tokens (user_id, token, expires_at) 
+                 VALUES (:user_id, :token, FROM_UNIXTIME(:expiry))";
+        $stmt = $this->db->prepare($query);
+        $stmt->bindParam(":user_id", $user_id);
+        $stmt->bindParam(":token", $token);
+        $stmt->bindParam(":expiry", $expiry);
+        $stmt->execute();
+        
+        // Set cookie
+        setcookie('remember_token', $token, $expiry, '/', '', true, true);
     }
 
     // Logout function
@@ -212,8 +329,8 @@ class AuthController {
             return false;
         }
         
-        // Verify current password
-        if(!password_verify($current_password, $this->user->password)) {
+        // Verify current password - direct compare now, no hashing
+        if($current_password != $this->user->password) {
             $_SESSION['alert'] = "Mevcut şifre hatalı.";
             $_SESSION['alert_type'] = "danger";
             return false;
@@ -235,4 +352,3 @@ class AuthController {
     
 }
 ?>
-
