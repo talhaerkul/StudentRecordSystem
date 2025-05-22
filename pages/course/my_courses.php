@@ -121,10 +121,6 @@ ob_start();
                                     class="btn btn-sm btn-outline-info" title="Not Ölçekleri">
                                     <i class="fas fa-chart-bar"></i> Not Ölçekleri
                                 </a>
-                                <a href="<?php echo url('/pages/course/course_schedule.php?course_id=' . $row['id'] . '&term_id=' . $row['term_id']); ?>"
-                                    class="btn btn-sm btn-outline-secondary" title="Ders Programı">
-                                    <i class="fas fa-calendar-alt"></i> Program
-                                </a>
                             </div>
                         </td>
                     </tr>
@@ -155,7 +151,6 @@ ob_start();
                 <li><strong>Not Girişi</strong> - Öğrencilerin sınav, ödev ve diğer değerlendirme notlarını
                     girebilirsiniz.</li>
                 <li><strong>Not Ölçekleri</strong> - Ders için harf notu hesaplama ölçeklerini düzenleyebilirsiniz.</li>
-                <li><strong>Program</strong> - Ders programını görüntüleyebilirsiniz.</li>
                 <li><strong><a href="<?php echo url('/pages/course/my_students.php'); ?>">Öğrencilerim</a></strong> -
                     Tüm derslerinize kayıtlı öğrencileri görüntüleyebilirsiniz.</li>
             </ul>

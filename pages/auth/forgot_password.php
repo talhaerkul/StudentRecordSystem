@@ -5,8 +5,13 @@ require_once '../../controllers/AuthController.php';
 require_once '../../models/User.php';
 require_once '../../config/database.php';
 
-// Generate CSRF token if not exists
-if (!isset($_SESSION['csrf_token'])) {
+// Session kontrolü
+if (session_status() === PHP_SESSION_NONE) {
+    session_start();
+}
+
+// CSRF token oluşturma - yalnızca GET istekleri için
+if ($_SERVER["REQUEST_METHOD"] == "GET" && !isset($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
 }
 
@@ -20,11 +25,15 @@ $step = isset($_SESSION['reset_step']) ? $_SESSION['reset_step'] : 1;
 
 // Şifre sıfırlama işlemi
 if($_SERVER["REQUEST_METHOD"] == "POST") {
-    // CSRF token kontrolü
-    if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+    // CSRF token kontrolü - POST isteği için
+    $csrf_valid = true;
+    if (!isset($_POST['csrf_token']) || !isset($_SESSION['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
+        $csrf_valid = false;
         $_SESSION['alert'] = "Güvenlik doğrulaması başarısız oldu. Lütfen sayfayı yenileyip tekrar deneyin.";
         $_SESSION['alert_type'] = "danger";
-    } else {
+    }
+    
+    if ($csrf_valid) {
         // ADIM 1: E-posta doğrulama
         if($step == 1 && isset($_POST['email'])) {
             $email = $_POST['email'];
@@ -375,7 +384,6 @@ ob_start();
                 <!-- ADIM 1: E-posta doğrulama formu -->
                 <form action="<?php echo url('/pages/auth/forgot_password.php'); ?>" method="POST">
                     <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
-                    
                     <div class="form-group">
                         <label for="email"><i class="fas fa-envelope mr-1"></i> E-posta Adresiniz</label>
                         <input type="email" class="form-control" id="email" name="email" required 
@@ -398,7 +406,6 @@ ob_start();
                 <!-- ADIM 2: Güvenlik sorusu formu -->
                 <form action="<?php echo url('/pages/auth/forgot_password.php'); ?>" method="POST">
                     <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
-                    
                     <div class="alert alert-info" role="alert">
                         <i class="fas fa-info-circle mr-1"></i> <strong>Güvenlik Sorusu:</strong> 
                         <?php 
@@ -445,7 +452,6 @@ ob_start();
                 <!-- ADIM 3: Kod doğrulama formu -->
                 <form action="<?php echo url('/pages/auth/forgot_password.php'); ?>" method="POST">
                     <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
-                    
                     <div class="alert alert-warning" role="alert">
                         <i class="fas fa-bell mr-1"></i> <strong>Bilgi:</strong> 
                         Gerçek bir sistemde, sıfırlama kodu e-posta veya SMS ile gönderilir. Bu demo sistemde kod ekranda gösterilmektedir.
@@ -475,7 +481,6 @@ ob_start();
                 <!-- ADIM 4: Yeni şifre formu -->
                 <form action="<?php echo url('/pages/auth/forgot_password.php'); ?>" method="POST">
                     <input type="hidden" name="csrf_token" value="<?php echo $_SESSION['csrf_token']; ?>">
-                    
                     <div class="form-group">
                         <label for="new_password"><i class="fas fa-lock mr-1"></i> Yeni Şifre</label>
                         <input type="password" class="form-control" id="new_password" name="new_password" required

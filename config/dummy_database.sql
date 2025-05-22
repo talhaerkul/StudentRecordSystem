@@ -1,9 +1,17 @@
--- Drop existing database if it exists
-DROP DATABASE IF EXISTS student_record_system;
-
--- Create database with proper character encoding
-CREATE DATABASE student_record_system CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
-USE student_record_system;
+-- Drop tables in reverse order to avoid foreign key constraints
+DROP TABLE IF EXISTS student_courses;
+DROP TABLE IF EXISTS student_course_requests;
+DROP TABLE IF EXISTS password_reset_tokens;
+DROP TABLE IF EXISTS course_schedule;
+DROP TABLE IF EXISTS course_grade_scales;
+DROP TABLE IF EXISTS teacher_courses;
+DROP TABLE IF EXISTS announcements;
+DROP TABLE IF EXISTS users;
+DROP TABLE IF EXISTS courses;
+DROP TABLE IF EXISTS terms;
+DROP TABLE IF EXISTS scholarships;
+DROP TABLE IF EXISTS departments;
+DROP TABLE IF EXISTS roles;
 
 -- Create roles table
 CREATE TABLE IF NOT EXISTS roles (
@@ -26,8 +34,10 @@ CREATE TABLE IF NOT EXISTS scholarships (
     name VARCHAR(100) NOT NULL,
     description TEXT,
     amount DECIMAL(10,2) DEFAULT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
+    created_at TIMESTAMP NOT NULL DEFAULT "0000-00-00 00:00:00",
+    updated_at TIMESTAMP NOT NULL DEFAULT "0000-00-00 00:00:00" on update now()
+    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Create users table
@@ -51,8 +61,10 @@ CREATE TABLE IF NOT EXISTS users (
     entry_year INT NULL,
     is_teacher BOOLEAN DEFAULT FALSE,
     is_student BOOLEAN DEFAULT FALSE,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME NULL ON UPDATE CURRENT_TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT "0000-00-00 00:00:00",
+    updated_at TIMESTAMP NOT NULL DEFAULT "0000-00-00 00:00:00" on update now(),
     last_login DATETIME DEFAULT NULL,
     FOREIGN KEY (role_id) REFERENCES roles(id),
     FOREIGN KEY (department_id) REFERENCES departments(id),
@@ -71,8 +83,11 @@ CREATE TABLE IF NOT EXISTS terms (
     end_date DATE NOT NULL,
     is_current BOOLEAN DEFAULT FALSE,
     status ENUM('active', 'inactive') DEFAULT 'active',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP
+    created_at TIMESTAMP NOT NULL DEFAULT "0000-00-00 00:00:00",
+    updated_at TIMESTAMP NOT NULL DEFAULT "0000-00-00 00:00:00" on update now(),
+    course_selection_start DATETIME NULL,
+    course_selection_end DATETIME NULL,
+    is_course_selection_active TINYINT(1) NOT NULL DEFAULT 0
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Create courses table
@@ -86,8 +101,8 @@ CREATE TABLE IF NOT EXISTS courses (
     year TINYINT(1) NOT NULL DEFAULT 1 COMMENT '1=1. year, 2=2. year, etc.',
     hours_per_week INT NOT NULL DEFAULT 2,
     status ENUM('active', 'inactive') DEFAULT 'active',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT "0000-00-00 00:00:00",
+    updated_at TIMESTAMP NOT NULL DEFAULT "0000-00-00 00:00:00" on update now(),
     FOREIGN KEY (department_id) REFERENCES departments(id)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
@@ -97,8 +112,8 @@ CREATE TABLE IF NOT EXISTS teacher_courses (
     teacher_id INT NOT NULL,
     course_id INT NOT NULL,
     term_id INT NOT NULL,
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT "0000-00-00 00:00:00",
+    updated_at TIMESTAMP NOT NULL DEFAULT "0000-00-00 00:00:00" on update now(),
     FOREIGN KEY (teacher_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
     FOREIGN KEY (term_id) REFERENCES terms(id) ON DELETE CASCADE,
@@ -129,8 +144,8 @@ CREATE TABLE IF NOT EXISTS course_grade_scales (
     min_grade DECIMAL(5,2) NOT NULL,
     max_grade DECIMAL(5,2) NOT NULL,
     grade_point DECIMAL(3,2) NOT NULL,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT "0000-00-00 00:00:00",
+    updated_at TIMESTAMP NOT NULL DEFAULT "0000-00-00 00:00:00" on update now(),
     UNIQUE KEY course_teacher_term_letter (course_id, teacher_id, term_id, letter),
     KEY course_id (course_id),
     KEY teacher_id (teacher_id),
@@ -150,8 +165,8 @@ CREATE TABLE IF NOT EXISTS course_schedule (
     start_time TIME NOT NULL,
     end_time TIME NOT NULL,
     classroom VARCHAR(50) NOT NULL,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at DATETIME DEFAULT NULL ON UPDATE CURRENT_TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT "0000-00-00 00:00:00",
+    updated_at TIMESTAMP NOT NULL DEFAULT "0000-00-00 00:00:00" on update now(),
     KEY fk_schedule_course_idx (course_id),
     KEY fk_schedule_teacher_idx (teacher_id),
     KEY fk_schedule_term_idx (term_id),
@@ -172,34 +187,12 @@ CREATE TABLE IF NOT EXISTS announcements (
     start_date DATETIME NOT NULL,
     end_date DATETIME NOT NULL,
     status ENUM('active', 'inactive', 'archived') DEFAULT 'active',
-    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NULL ON UPDATE CURRENT_TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT "0000-00-00 00:00:00",
+    updated_at TIMESTAMP NOT NULL DEFAULT "0000-00-00 00:00:00" on update now(),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE,
     FOREIGN KEY (role_id) REFERENCES roles(id) ON DELETE SET NULL,
     FOREIGN KEY (department_id) REFERENCES departments(id) ON DELETE SET NULL,
     FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE SET NULL
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Create login_attempts table
-CREATE TABLE IF NOT EXISTS login_attempts (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    email VARCHAR(255) NOT NULL,
-    timestamp DATETIME NOT NULL,
-    KEY email (email),
-    KEY timestamp (timestamp)
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
-
--- Create remember_tokens table
-CREATE TABLE IF NOT EXISTS remember_tokens (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    user_id INT NOT NULL,
-    token VARCHAR(64) NOT NULL,
-    expires_at DATETIME NOT NULL,
-    created_at DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE KEY token (token),
-    KEY user_id (user_id),
-    KEY expires_at (expires_at),
-    FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
 -- Create password_reset_tokens table
@@ -208,21 +201,37 @@ CREATE TABLE IF NOT EXISTS password_reset_tokens (
     user_id INT NOT NULL,
     token VARCHAR(64) NOT NULL,
     expires_at DATETIME NOT NULL,
-    created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    created_at TIMESTAMP NOT NULL DEFAULT '0000-00-00 00:00:00',
     UNIQUE KEY user_id (user_id),
     UNIQUE KEY token (token),
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+-- Create student_course_requests table
+CREATE TABLE IF NOT EXISTS student_course_requests (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    student_id INT NOT NULL,
+    course_id INT NOT NULL,
+    term_id INT NOT NULL,
+    status ENUM('pending', 'approved', 'rejected') DEFAULT 'pending',
+    requested_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    processed_at TIMESTAMP NULL,
+    processed_by INT NULL,
+    FOREIGN KEY (student_id) REFERENCES users(id) ON DELETE CASCADE,
+    FOREIGN KEY (course_id) REFERENCES courses(id) ON DELETE CASCADE,
+    FOREIGN KEY (term_id) REFERENCES terms(id) ON DELETE CASCADE,
+    FOREIGN KEY (processed_by) REFERENCES users(id) ON DELETE SET NULL,
+    UNIQUE KEY unique_student_course_term_request (student_id, course_id, term_id)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci; 
+
 -- Insert default roles
 INSERT INTO roles (name, description) VALUES
 ('admin', 'Sistem Yöneticisi'),
-('student_affairs', 'Öğrenci İşleri'),
 ('teacher', 'Akademik Personel'),
 ('student', 'Öğrenci');
 
 -- Insert sample departments
-INSERT INTO departments (name, code) VALUES
+INSERT IGNORE INTO departments (name, code) VALUES
 ('Bilgisayar Mühendisliği', 'CENG'),
 ('Elektrik Mühendisliği', 'EE'),
 ('Makine Mühendisliği', 'ME'),
@@ -245,7 +254,7 @@ INSERT INTO terms (name, start_date, end_date, is_current) VALUES
 ('Bahar 2024', '2024-02-01', '2024-06-15', 1);
 
 -- Insert default admin user (password: admin123)
-INSERT INTO users (name, surname, email, password, role_id, department_id, status, is_teacher, is_student) VALUES
+INSERT IGNORE INTO users (name, surname, email, password, role_id, department_id, status, is_teacher, is_student) VALUES
 ('Admin', 'Kullanıcı', 'admin@uni.edu.tr', 'admin123', 1, 1, 'active', 0, 0);
 
 -- Insert sample teachers (password: teacher123)
@@ -286,74 +295,74 @@ INSERT INTO courses (name, code, description, credit, department_id, year, hours
 
 -- Assign courses to teachers
 INSERT INTO teacher_courses (teacher_id, course_id, term_id) VALUES
-(3, 1, 1), -- Ahmet Yılmaz - Programlama Temelleri - Güz 2022
-(3, 2, 2), -- Ahmet Yılmaz - Veri Yapıları - Bahar 2023
-(3, 5, 3), -- Ahmet Yılmaz - Yapay Zeka - Güz 2023
-(3, 5, 4), -- Ahmet Yılmaz - Yapay Zeka - Bahar 2024
-(4, 3, 1), -- Mehmet Kaya - Veritabanı Sistemleri - Güz 2022
-(4, 3, 3), -- Mehmet Kaya - Veritabanı Sistemleri - Güz 2023
-(4, 4, 2), -- Mehmet Kaya - Web Programlama - Bahar 2023
-(4, 4, 4), -- Mehmet Kaya - Web Programlama - Bahar 2024
-(5, 6, 1), -- Ayşe Çelik - Devre Teorisi - Güz 2022
-(5, 7, 2), -- Ayşe Çelik - Elektronik - Bahar 2023
-(5, 8, 3), -- Ayşe Çelik - Sinyal İşleme - Güz 2023
-(5, 8, 4), -- Ayşe Çelik - Sinyal İşleme - Bahar 2024
-(6, 9, 1), -- Fatma Demir - Termodinamik - Güz 2022
-(6, 10, 2), -- Fatma Demir - Mukavemet - Bahar 2023
-(6, 9, 3), -- Fatma Demir - Termodinamik - Güz 2023
-(6, 10, 4), -- Fatma Demir - Mukavemet - Bahar 2024
-(7, 11, 1), -- Ali Şahin - Üretim Sistemleri - Güz 2022
-(7, 12, 2), -- Ali Şahin - Optimizasyon - Bahar 2023
-(7, 11, 3), -- Ali Şahin - Üretim Sistemleri - Güz 2023
-(7, 12, 4), -- Ali Şahin - Optimizasyon - Bahar 2024
-(8, 13, 1), -- Zeynep Yıldız - İşletme Yönetimi - Güz 2022
-(8, 14, 2), -- Zeynep Yıldız - Finans - Bahar 2023
-(8, 13, 3), -- Zeynep Yıldız - İşletme Yönetimi - Güz 2023
-(8, 14, 4); -- Zeynep Yıldız - Finans - Bahar 2024
+(2, 1, 1), -- Ahmet Yılmaz - Programlama Temelleri - Güz 2022
+(2, 2, 2), -- Ahmet Yılmaz - Veri Yapıları - Bahar 2023
+(2, 5, 3), -- Ahmet Yılmaz - Yapay Zeka - Güz 2023
+(2, 5, 4), -- Ahmet Yılmaz - Yapay Zeka - Bahar 2024
+(3, 3, 1), -- Mehmet Kaya - Veritabanı Sistemleri - Güz 2022
+(3, 3, 3), -- Mehmet Kaya - Veritabanı Sistemleri - Güz 2023
+(3, 4, 2), -- Mehmet Kaya - Web Programlama - Bahar 2023
+(3, 4, 4), -- Mehmet Kaya - Web Programlama - Bahar 2024
+(4, 6, 1), -- Ayşe Çelik - Devre Teorisi - Güz 2022
+(4, 7, 2), -- Ayşe Çelik - Elektronik - Bahar 2023
+(4, 8, 3), -- Ayşe Çelik - Sinyal İşleme - Güz 2023
+(4, 8, 4), -- Ayşe Çelik - Sinyal İşleme - Bahar 2024
+(5, 9, 1), -- Fatma Demir - Termodinamik - Güz 2022
+(5, 10, 2), -- Fatma Demir - Mukavemet - Bahar 2023
+(5, 9, 3), -- Fatma Demir - Termodinamik - Güz 2023
+(5, 10, 4), -- Fatma Demir - Mukavemet - Bahar 2024
+(6, 11, 1), -- Ali Şahin - Üretim Sistemleri - Güz 2022
+(6, 12, 2), -- Ali Şahin - Optimizasyon - Bahar 2023
+(6, 11, 3), -- Ali Şahin - Üretim Sistemleri - Güz 2023
+(6, 12, 4), -- Ali Şahin - Optimizasyon - Bahar 2024
+(7, 13, 1), -- Zeynep Yıldız - İşletme Yönetimi - Güz 2022
+(7, 14, 2), -- Zeynep Yıldız - Finans - Bahar 2023
+(7, 13, 3), -- Zeynep Yıldız - İşletme Yönetimi - Güz 2023
+(7, 14, 4); -- Zeynep Yıldız - Finans - Bahar 2024
 
 -- Enroll students in courses and assign grades
 -- Student 1: Cem Demir (Bilgisayar Mühendisliği)
 INSERT INTO student_courses (student_id, course_id, term_id, grade, status) VALUES
-(9, 1, 1, 85, 'completed'), -- CENG101 Güz 2022 - BA
-(9, 2, 2, 92, 'completed'), -- CENG201 Bahar 2023 - AA
-(9, 3, 3, 78, 'completed'), -- CENG301 Güz 2023 - CB
-(9, 4, 4, 88, 'enrolled'); -- CENG302 Bahar 2024 - Currently enrolled
+(8, 1, 1, 85, 'completed'), -- CENG101 Güz 2022 - BA
+(8, 2, 2, 92, 'completed'), -- CENG201 Bahar 2023 - AA
+(8, 3, 3, 78, 'completed'), -- CENG301 Güz 2023 - CB
+(8, 4, 4, 88, 'enrolled'); -- CENG302 Bahar 2024 - Currently enrolled
 
 -- Student 2: Deniz Yılmaz (Bilgisayar Mühendisliği)
 INSERT INTO student_courses (student_id, course_id, term_id, grade, status) VALUES
-(10, 1, 1, 75, 'completed'), -- CENG101 Güz 2022 - CB
-(10, 2, 2, 68, 'completed'), -- CENG201 Bahar 2023 - DC
-(10, 3, 3, 82, 'completed'), -- CENG301 Güz 2023 - BB
-(10, 4, 4, NULL, 'enrolled'); -- CENG302 Bahar 2024 - Currently enrolled
+(9, 1, 1, 75, 'completed'), -- CENG101 Güz 2022 - CB
+(9, 2, 2, 68, 'completed'), -- CENG201 Bahar 2023 - DC
+(9, 3, 3, 82, 'completed'), -- CENG301 Güz 2023 - BB
+(9, 4, 4, NULL, 'enrolled'); -- CENG302 Bahar 2024 - Currently enrolled
 
 -- Student 3: Elif Kara (Bilgisayar Mühendisliği - Started 2023)
 INSERT INTO student_courses (student_id, course_id, term_id, grade, status) VALUES
-(11, 1, 3, 95, 'completed'), -- CENG101 Güz 2023 - AA
-(11, 2, 4, NULL, 'enrolled'); -- CENG201 Bahar 2024 - Currently enrolled
+(10, 1, 3, 95, 'completed'), -- CENG101 Güz 2023 - AA
+(10, 2, 4, NULL, 'enrolled'); -- CENG201 Bahar 2024 - Currently enrolled
 
 -- Student 4: Burak Öztürk (Elektrik Mühendisliği - Started 2023)
 INSERT INTO student_courses (student_id, course_id, term_id, grade, status) VALUES
-(12, 6, 3, 72, 'completed'), -- EE101 Güz 2023 - CC
-(12, 7, 4, NULL, 'enrolled'); -- EE201 Bahar 2024 - Currently enrolled
+(11, 6, 3, 72, 'completed'), -- EE101 Güz 2023 - CC
+(11, 7, 4, NULL, 'enrolled'); -- EE201 Bahar 2024 - Currently enrolled
 
 -- Student 5: Gizem Aydın (Makine Mühendisliği)
 INSERT INTO student_courses (student_id, course_id, term_id, grade, status) VALUES
-(13, 9, 1, 82, 'completed'), -- ME101 Güz 2022 - BB
-(13, 10, 2, 88, 'completed'), -- ME201 Bahar 2023 - BB
-(13, 9, 3, 55, 'failed'), -- ME101 Güz 2023 - FF (Failed and will retake)
-(13, 10, 4, NULL, 'enrolled'); -- ME201 Bahar 2024 - Currently enrolled
+(12, 9, 1, 82, 'completed'), -- ME101 Güz 2022 - BB
+(12, 10, 2, 88, 'completed'), -- ME201 Bahar 2023 - BB
+(12, 9, 3, 55, 'failed'), -- ME101 Güz 2023 - FF (Failed and will retake)
+(12, 10, 4, NULL, 'enrolled'); -- ME201 Bahar 2024 - Currently enrolled
 
 -- Student 6: Hakan Yıldırım (Endüstri Mühendisliği - Started 2023)
 INSERT INTO student_courses (student_id, course_id, term_id, grade, status) VALUES
-(14, 11, 3, 78, 'completed'), -- IE101 Güz 2023 - CB
-(14, 12, 4, NULL, 'enrolled'); -- IE201 Bahar 2024 - Currently enrolled
+(13, 11, 3, 78, 'completed'), -- IE101 Güz 2023 - CB
+(13, 12, 4, NULL, 'enrolled'); -- IE201 Bahar 2024 - Currently enrolled
 
 -- Student 7: İrem Koç (İşletme)
 INSERT INTO student_courses (student_id, course_id, term_id, grade, status) VALUES
-(15, 13, 1, 95, 'completed'), -- BA101 Güz 2022 - AA
-(15, 14, 2, 90, 'completed'), -- BA201 Bahar 2023 - AA
-(15, 13, 3, 92, 'completed'), -- BA101 Güz 2023 (retaking for higher grade) - AA
-(15, 14, 4, NULL, 'enrolled'); -- BA201 Bahar 2024 - Currently enrolled
+(14, 13, 1, 95, 'completed'), -- BA101 Güz 2022 - AA
+(14, 14, 2, 90, 'completed'), -- BA201 Bahar 2023 - AA
+(14, 13, 3, 92, 'completed'), -- BA101 Güz 2023 (retaking for higher grade) - AA
+(14, 14, 4, NULL, 'enrolled'); -- BA201 Bahar 2024 - Currently enrolled
 
 -- Insert default grade scales for all course-teacher-term combinations
 INSERT INTO course_grade_scales (course_id, teacher_id, term_id, letter, min_grade, max_grade, grade_point) VALUES
@@ -381,4 +390,4 @@ INSERT INTO announcements (title, content, user_id, role_id, department_id, cour
 ('Bilgisayar Mühendisliği Bölümü Duyurusu', 'Bilgisayar Mühendisliği öğrencileri için ders kaydı hakkında önemli bilgilendirme.', 1, 3, 1, NULL, '2024-02-01 00:00:00', '2024-06-15 23:59:59', 'active'),
 ('Sistem Bakımı', 'Sistem 15 Şubat 2024 tarihinde 22:00 - 23:00 saatleri arasında bakımda olacaktır.', 1, 1, NULL, NULL, '2024-02-14 00:00:00', '2024-02-15 23:59:59', 'active'),
 ('Yönetici Duyurusu', 'Tüm yöneticiler için sistem güncellemeleri hakkında önemli duyuru.', 1, 1, NULL, NULL, '2024-02-01 00:00:00', '2024-12-31 23:59:59', 'active'),
-('Genel Duyuru', 'Bu bir test duyurusudur, tüm kullanıcılar görebilir.', 1, NULL, NULL, NULL, '2024-02-01 00:00:00', '2024-12-31 23:59:59', 'active'); 
+('Genel Duyuru', 'Bu bir test duyurusudur, tüm kullanıcılar görebilir.', 1, NULL, NULL, NULL, '2024-02-01 00:00:00', '2024-12-31 23:59:59', 'active');

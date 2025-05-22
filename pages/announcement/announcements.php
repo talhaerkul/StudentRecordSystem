@@ -1,7 +1,11 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 // Database connection and include the announcement model and service
 require_once '../../config/database.php';
-require_once '../../models/announcement.php';
+require_once '../../models/Announcement.php';
 require_once '../../includes/auth_check.php';
 require_once '../../models/Role.php';
 require_once '../../models/Department.php';
@@ -13,7 +17,7 @@ requireLogin();
 
 // Check if the user is logged in
 if (!isset($_SESSION['user_id'])) {
-    header('Location: ../auth/login.php');
+    header('Location: /pages/auth/login.php');
     exit();
 }
 
@@ -130,7 +134,6 @@ if ($isAdmin) {
     // Students and teachers see only active and valid dated announcements
     $announcements = $announcementService->getAllAnnouncements();
 }
-
 // For editing permissions, we still need to check roles
 $canEdit = ($user_role == ROLE_ADMIN);
 
@@ -251,7 +254,7 @@ ob_start();
                         <i class="fas fa-info-circle"></i> Duyuru bulunmamaktadır.
                     </div>
                     <?php endif; ?>
-                    
+
                     <?php else: ?>
                     <!-- Non-admin users see only active and valid dated announcements -->
                     <?php 

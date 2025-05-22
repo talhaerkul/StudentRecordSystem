@@ -3,23 +3,40 @@
 require_once '../../config/config.php';
 require_once '../../controllers/AuthController.php';
 
+// Geçici olarak güvenli cookie ayarını devre dışı bırakalım
+// (Production için tekrar etkinleştirin!)
+ini_set('session.cookie_secure', '0');
+
 // Check if user is already logged in
 if(isset($_SESSION['user_id'])) {
     header("Location: " . url('/pages/dashboard.php'));
     exit;
 }
 
+// Mevcut session değişkenlerini kontrol edelim
+echo "<!-- DEBUG - Session durum kontrolü -->";
+echo "<!-- Session ID: " . session_id() . " -->";
+echo "<!-- Session Status: " . session_status() . " -->";
+
 // Generate CSRF token if not exists
 if (!isset($_SESSION['csrf_token'])) {
     $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    echo "<!-- Yeni CSRF token oluşturuldu: " . $_SESSION['csrf_token'] . " -->";
+} else {
+    echo "<!-- Mevcut CSRF token: " . $_SESSION['csrf_token'] . " -->";
 }
 
 // Process login form
 if($_SERVER["REQUEST_METHOD"] == "POST") {
+    echo "<!-- POST verileri: " . htmlspecialchars(print_r($_POST, true)) . " -->";
+    
     // Verify CSRF token
     if (!isset($_POST['csrf_token']) || $_POST['csrf_token'] !== $_SESSION['csrf_token']) {
         $_SESSION['alert'] = "Güvenlik doğrulaması başarısız oldu. Lütfen sayfayı yenileyip tekrar deneyin.";
         $_SESSION['alert_type'] = "danger";
+        echo "<!-- CSRF doğrulama hatası: 
+            POST token: " . ($_POST['csrf_token'] ?? 'Yok') . " 
+            SESSION token: " . ($_SESSION['csrf_token'] ?? 'Yok') . " -->";
     } else {
         $email = $_POST['email'] ?? '';
         $password = $_POST['password'] ?? '';

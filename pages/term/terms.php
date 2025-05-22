@@ -85,6 +85,7 @@ ob_start();
                                 <th>Başlangıç Tarihi</th>
                                 <th>Bitiş Tarihi</th>
                                 <th>Durum</th>
+                                <th>Ders Seçimi</th>
                                 <th>İşlemler</th>
                             </tr>
                         </thead>
@@ -99,6 +100,23 @@ ob_start();
                                         class="badge <?php echo $row['status'] == 'active' ? 'badge-success' : 'badge-danger'; ?>">
                                         <?php echo $row['status'] == 'active' ? 'Aktif' : 'Pasif'; ?>
                                     </span>
+                                </td>
+                                <td>
+                                    <?php
+                                    $term_obj = new Term($db);
+                                    $term_obj->id = $row['id'];
+                                    $term_obj->readOne();
+                                    $is_selection_active = $term_obj->isCourseSelectionActive();
+                                    ?>
+                                    <span class="badge <?php echo $is_selection_active ? 'badge-success' : 'badge-secondary'; ?>">
+                                        <?php echo $is_selection_active ? 'Açık' : 'Kapalı'; ?>
+                                    </span>
+                                    <?php if ($row['is_course_selection_active']): ?>
+                                    <small class="d-block text-muted">
+                                        <?php echo $row['course_selection_start'] ? date('d.m.Y H:i', strtotime($row['course_selection_start'])) : ''; ?> - 
+                                        <?php echo $row['course_selection_end'] ? date('d.m.Y H:i', strtotime($row['course_selection_end'])) : ''; ?>
+                                    </small>
+                                    <?php endif; ?>
                                 </td>
                                 <td>
                                     <a href="<?php echo url('/pages/term/edit_term.php?id=' . $row['id']); ?>"

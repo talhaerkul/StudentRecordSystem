@@ -7,3 +7,6 @@
 [2025-05-09 18:17:22] POST data received: {"course_id":"12","term_id":"4","grades":"{\"14\":\"20\"}"}
 [2025-05-09 18:17:22] Grades parsed: {"14":"20"}
 [2025-05-09 18:17:22] Grade update results: {"totalUpdates":1,"successCount":1,"errors":[]}
+[2025-05-11 14:09:02] POST data received: {"course_id":"3","term_id":"3","grades":"{\"9\":\"78.00\",\"10\":\"80\"}"}
+[2025-05-11 14:09:02] Grades parsed: {"9":"78.00","10":"80"}
+[2025-05-11 14:09:02] Grade update results: {"totalUpdates":2,"successCount":2,"errors":[]}

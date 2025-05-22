@@ -40,7 +40,7 @@ function requireLogin() {
         // Get relative path to /pages/auth/login.php from current script
         $script_dir = dirname($_SERVER['SCRIPT_NAME']);
         $root_dir = dirname($script_dir);
-        $login_path = ($root_dir == '/' ? '' : $root_dir) . '//pages/auth/login.php';
+        $login_path = ($root_dir == '/' ? '' : $root_dir) . '/pages/auth/login.php';
         
         header("Location: $login_path");
         exit;
@@ -62,7 +62,7 @@ function requireRole($requiredRoles) {
         // Get relative path to /pages/dashboard.php from current script
         $script_dir = dirname($_SERVER['SCRIPT_NAME']);
         $root_dir = dirname($script_dir);
-        $dashboard_path = ($root_dir == '/' ? '' : $root_dir) . '//pages/dashboard.php';
+        $dashboard_path = ($root_dir == '/' ? '' : $root_dir) . '/pages/dashboard.php';
         
         header("Location: $dashboard_path");
         exit;

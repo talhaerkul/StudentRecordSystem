@@ -1,11 +1,16 @@
 <?php
+// Set default timezone to Istanbul
+date_default_timezone_set('Europe/Istanbul');
+
 // Session configuration
-ini_set('session.cookie_secure', '1');
-ini_set('session.cookie_httponly', '1');
-ini_set('session.cookie_samesite', 'Strict');
+// Geliştirme ortamında güvenli cookie'leri devre dışı bırakıyoruz
+// Production'a geçtiğinizde tekrar etkinleştirin!
+ini_set('session.cookie_secure', '0'); // HTTP için 0, HTTPS için 1 olmalı
+ini_set('session.cookie_httponly', '1'); 
+ini_set('session.cookie_samesite', 'Lax'); // Strict yerine Lax kullanıyoruz
 ini_set('session.name', 'OKAN_SESSID');
-ini_set('session.cookie_lifetime', '0');
-ini_set('session.gc_maxlifetime', '1800'); // 30 minutes
+ini_set('session.cookie_lifetime', '86400'); // 24 saat (saniye cinsinden)
+ini_set('session.gc_maxlifetime', '86400'); // 24 saat
 
 // Site configuration
 define('SITE_NAME', 'Üniversite - Öğrenci Bilgi Sistemi');
@@ -22,11 +27,6 @@ function url($path) {
     return BASE_PATH . $path;
 }
 
-// Database configuration
-define('DB_HOST', 'localhost');
-define('DB_NAME', 'student_record_system');
-define('DB_USER', 'root');
-define('DB_PASS', '');
 
 // User roles
 define('ROLE_ADMIN', 1);

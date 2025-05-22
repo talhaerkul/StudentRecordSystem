@@ -355,26 +355,6 @@ ob_start();
                             </div>
                             <?php endif; ?>
 
-                            <?php if(in_array($_SESSION['role'], [ROLE_ADMIN, ROLE_TEACHER])): ?>
-                            <div class="col-md-4">
-                                <label for="year" class="form-label fw-bold">
-                                    <i class="fas fa-layer-group mr-1"></i> Sınıf / Yıl
-                                </label>
-                                <select name="year" id="year" class="form-control form-control-sm shadow-sm"
-                                    onchange="this.form.submit()">
-                                    <option value="">Tüm Sınıflar</option>
-                                    <option value="1" <?php echo ($selected_year == 1) ? 'selected' : ''; ?>>1. Sınıf
-                                    </option>
-                                    <option value="2" <?php echo ($selected_year == 2) ? 'selected' : ''; ?>>2. Sınıf
-                                    </option>
-                                    <option value="3" <?php echo ($selected_year == 3) ? 'selected' : ''; ?>>3. Sınıf
-                                    </option>
-                                    <option value="4" <?php echo ($selected_year == 4) ? 'selected' : ''; ?>>4. Sınıf
-                                    </option>
-                                </select>
-                            </div>
-                            <?php endif; ?>
-
                             <div class="col-md-12 d-flex align-items-end justify-content-end">
                                 <?php if(in_array($_SESSION['role'], [ROLE_ADMIN, ROLE_TEACHER]) && $selected_term_id): ?>
                                 <button type="button" class="btn btn-success shadow-sm" data-toggle="modal"

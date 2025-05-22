@@ -172,6 +172,79 @@ ob_start();
                             </div>
                         </div>
                     </div>
+
+                    <!-- Yeni eklenen admin hızlı erişim linkleri -->
+                    <div class="col-md-4 mb-3">
+                        <div
+                            class="card h-100 shadow-sm hover:shadow-md transition-shadow duration-200 rounded-lg overflow-hidden border-t-2 border-blue-500">
+                            <div class="card-body text-center p-4">
+                                <i class="fas fa-building fa-3x text-blue-600 mb-3"></i>
+                                <h5 class="font-semibold text-gray-800">Bölümler</h5>
+                                <a href="<?php echo url('/pages/department/departments.php'); ?>"
+                                    class="btn btn-sm btn-info mt-3 shadow-sm hover:shadow-md transition-all duration-200">Görüntüle</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <div
+                            class="card h-100 shadow-sm hover:shadow-md transition-shadow duration-200 rounded-lg overflow-hidden border-t-2 border-green-500">
+                            <div class="card-body text-center p-4">
+                                <i class="fas fa-calendar-alt fa-3x text-green-600 mb-3"></i>
+                                <h5 class="font-semibold text-gray-800">Dönemler</h5>
+                                <a href="<?php echo url('/pages/term/terms.php'); ?>"
+                                    class="btn btn-sm btn-info mt-3 shadow-sm hover:shadow-md transition-all duration-200">Görüntüle</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <div
+                            class="card h-100 shadow-sm hover:shadow-md transition-shadow duration-200 rounded-lg overflow-hidden border-t-2 border-amber-500">
+                            <div class="card-body text-center p-4">
+                                <i class="fas fa-cog fa-3x text-amber-600 mb-3"></i>
+                                <h5 class="font-semibold text-gray-800">Ders Seçim Ayarları</h5>
+                                <a href="<?php echo url('/pages/course/course_selection_settings.php'); ?>"
+                                    class="btn btn-sm btn-info mt-3 shadow-sm hover:shadow-md transition-all duration-200">Görüntüle</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <div
+                            class="card h-100 shadow-sm hover:shadow-md transition-shadow duration-200 rounded-lg overflow-hidden border-t-2 border-red-500">
+                            <div class="card-body text-center p-4">
+                                <i class="fas fa-chart-bar fa-3x text-red-600 mb-3"></i>
+                                <h5 class="font-semibold text-gray-800">Not Ölçekleri</h5>
+                                <a href="<?php echo url('/pages/grade/admin_grade_scales.php'); ?>"
+                                    class="btn btn-sm btn-info mt-3 shadow-sm hover:shadow-md transition-all duration-200">Görüntüle</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <div
+                            class="card h-100 shadow-sm hover:shadow-md transition-shadow duration-200 rounded-lg overflow-hidden border-t-2 border-cyan-500">
+                            <div class="card-body text-center p-4">
+                                <i class="fas fa-user-graduate fa-3x text-cyan-600 mb-3"></i>
+                                <h5 class="font-semibold text-gray-800">Öğrenciler</h5>
+                                <a href="<?php echo url('/pages/students.php'); ?>"
+                                    class="btn btn-sm btn-info mt-3 shadow-sm hover:shadow-md transition-all duration-200">Görüntüle</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <div
+                            class="card h-100 shadow-sm hover:shadow-md transition-shadow duration-200 rounded-lg overflow-hidden border-t-2 border-pink-500">
+                            <div class="card-body text-center p-4">
+                                <i class="fas fa-tasks fa-3x text-pink-600 mb-3"></i>
+                                <h5 class="font-semibold text-gray-800">Ders Atama</h5>
+                                <a href="<?php echo url('/pages/course/assign_courses.php'); ?>"
+                                    class="btn btn-sm btn-info mt-3 shadow-sm hover:shadow-md transition-all duration-200">Görüntüle</a>
+                            </div>
+                        </div>
+                    </div>
                     <?php endif; ?>
 
 
@@ -204,8 +277,6 @@ ob_start();
                             </div>
                         </div>
                     </div>
-
-
 
                     <div class="col-md-4 mb-3">
                         <div
@@ -242,6 +313,31 @@ ob_start();
                             </div>
                         </div>
                     </div>
+
+                    <!-- Yeni eklenen öğretmen hızlı erişim linkleri -->
+                    <div class="col-md-4 mb-3">
+                        <div
+                            class="card h-100 shadow-sm hover:shadow-md transition-shadow duration-200 rounded-lg overflow-hidden border-t-2 border-blue-500">
+                            <div class="card-body text-center p-4">
+                                <i class="fas fa-user-graduate fa-3x text-blue-600 mb-3"></i>
+                                <h5 class="font-semibold text-gray-800">Öğrencilerim</h5>
+                                <a href="<?php echo url('/pages/course/my_students.php'); ?>"
+                                    class="btn btn-sm btn-info mt-3 shadow-sm hover:shadow-md transition-all duration-200">Görüntüle</a>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-4 mb-3">
+                        <div
+                            class="card h-100 shadow-sm hover:shadow-md transition-shadow duration-200 rounded-lg overflow-hidden border-t-2 border-green-500">
+                            <div class="card-body text-center p-4">
+                                <i class="fas fa-check-square fa-3x text-green-600 mb-3"></i>
+                                <h5 class="font-semibold text-gray-800">Ders Seçim Onayları</h5>
+                                <a href="<?php echo url('/pages/course/approve_course_requests.php'); ?>"
+                                    class="btn btn-sm btn-info mt-3 shadow-sm hover:shadow-md transition-all duration-200">Görüntüle</a>
+                            </div>
+                        </div>
+                    </div>
                     <?php endif; ?>
 
                     <?php if($_SESSION['role'] == ROLE_STUDENT): ?>
@@ -270,13 +366,15 @@ ob_start();
                         </div>
                     </div>
 
+
+                    <!-- Yeni eklenen öğrenci hızlı erişim linkleri -->
                     <div class="col-md-4 mb-3">
                         <div
-                            class="card h-100 shadow-sm hover:shadow-md transition-shadow duration-200 rounded-lg overflow-hidden border-t-2 border-violet-500">
+                            class="card h-100 shadow-sm hover:shadow-md transition-shadow duration-200 rounded-lg overflow-hidden border-t-2 border-green-500">
                             <div class="card-body text-center p-4">
-                                <i class="fas fa-calendar-alt fa-3x text-violet-600 mb-3"></i>
-                                <h5 class="font-semibold text-gray-800">Ders Programım</h5>
-                                <a href="<?php echo url('/pages/course/course_schedule.php'); ?>"
+                                <i class="fas fa-plus-circle fa-3x text-green-600 mb-3"></i>
+                                <h5 class="font-semibold text-gray-800">Ders Seçimi</h5>
+                                <a href="<?php echo url('/pages/course/select_courses.php'); ?>"
                                     class="btn btn-sm btn-info mt-3 shadow-sm hover:shadow-md transition-all duration-200">Görüntüle</a>
                             </div>
                         </div>

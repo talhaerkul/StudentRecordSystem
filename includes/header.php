@@ -108,28 +108,17 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="<?php echo url('/pages/grade/admin_grade_scales.php'); ?>">
-                            <i class="fas fa-chart-bar mr-1"></i> Not Ölçekleri
+                        <a class="nav-link" href="<?php echo url('/pages/course/course_selection_settings.php'); ?>">
+                            <i class="fas fa-cog mr-1"></i> Ders Seçim Ayarları
                         </a>
                     </li>
-                    <?php endif; ?>
 
-                    <?php if($_SESSION['role'] == ROLE_ADMIN || $_SESSION['role'] == ROLE_STUDENT_AFFAIRS): ?>
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?php echo url('/pages/students.php'); ?>">
-                            <i class="fas fa-user-graduate mr-1"></i> Öğrenciler
-                        </a>
-                    </li>
                     <li class="nav-item">
                         <a class="nav-link" href="<?php echo url('/pages/course/courses.php'); ?>">
                             <i class="fas fa-book mr-1"></i> Dersler
                         </a>
                     </li>
-                    <li class="nav-item">
-                        <a class="nav-link" href="<?php echo url('/pages/course/course_schedule.php'); ?>">
-                            <i class="fas fa-calendar mr-1"></i> Ders Programı
-                        </a>
-                    </li>
+
                     <li class="nav-item">
                         <a class="nav-link" href="<?php echo url('/pages/course/assign_courses.php'); ?>">
                             <i class="fas fa-tasks mr-1"></i> Ders Atama
@@ -148,15 +137,14 @@
                             <i class="fas fa-user-graduate mr-1"></i> Öğrencilerim
                         </a>
                     </li>
-
                     <li class="nav-item">
-                        <a class="nav-link" href="<?php echo url('/pages/grade/course_grade_scales.php'); ?>">
-                            <i class="fas fa-chart-bar mr-1"></i> Not Ölçekleri
+                        <a class="nav-link" href="<?php echo url('/pages/course/approve_course_requests.php'); ?>">
+                            <i class="fas fa-check-square mr-1"></i> Ders Seçim Onayları
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link" href="<?php echo url('/pages/announcement/teacher_announcements.php'); ?>">
-                            <i class="fas fa-bullhorn mr-1"></i> Duyurularım
+                        <a class="nav-link" href="<?php echo url('/pages/grade/course_grade_scales.php'); ?>">
+                            <i class="fas fa-chart-bar mr-1"></i> Not Ölçekleri
                         </a>
                     </li>
                     <?php endif; ?>
@@ -165,6 +153,11 @@
                     <li class="nav-item">
                         <a class="nav-link" href="<?php echo url('/pages/course/enrolled_courses.php'); ?>">
                             <i class="fas fa-book mr-1"></i> Aldığım Dersler
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" href="<?php echo url('/pages/course/select_courses.php'); ?>">
+                            <i class="fas fa-plus-circle mr-1"></i> Ders Seçimi
                         </a>
                     </li>
                     <li class="nav-item">

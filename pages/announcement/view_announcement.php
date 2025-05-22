@@ -1,7 +1,11 @@
 <?php
+ini_set('display_errors', 1);
+ini_set('display_startup_errors', 1);
+error_reporting(E_ALL);
+
 // Database connection and include the announcement model
 require_once '../../config/database.php';
-require_once '../../models/announcement.php';
+require_once '../../models/Announcement.php';
 require_once '../../includes/auth_check.php';
 
 // Start the session

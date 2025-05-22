@@ -48,6 +48,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $term->start_date = $_POST['start_date'];
         $term->end_date = $_POST['end_date'];
         $term->status = $_POST['status'];
+        $term->is_course_selection_active = isset($_POST['is_course_selection_active']) ? 1 : 0;
+        $term->course_selection_start = $_POST['course_selection_start'] ? $_POST['course_selection_start'] : null;
+        $term->course_selection_end = $_POST['course_selection_end'] ? $_POST['course_selection_end'] : null;
 
         // Update term
         if ($term->update()) {
@@ -61,6 +64,10 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     }
 }
+
+// Convert datetime for input fields
+$course_selection_start = $term->course_selection_start ? date('Y-m-d\TH:i', strtotime($term->course_selection_start)) : '';
+$course_selection_end = $term->course_selection_end ? date('Y-m-d\TH:i', strtotime($term->course_selection_end)) : '';
 
 // Set page title
 $page_title = "Dönem Düzenle";
@@ -125,6 +132,37 @@ ob_start();
                                 <option value="active" <?php echo ($term->status == 'active') ? 'selected' : ''; ?>>Aktif</option>
                                 <option value="inactive" <?php echo ($term->status == 'inactive') ? 'selected' : ''; ?>>Pasif</option>
                             </select>
+                        </div>
+
+                        <hr>
+                        <h5 class="mb-3">Ders Seçim Dönemi Ayarları</h5>
+                        
+                        <div class="form-group">
+                            <div class="custom-control custom-switch">
+                                <input type="checkbox" class="custom-control-input" id="is_course_selection_active" 
+                                    name="is_course_selection_active" <?php echo $term->is_course_selection_active ? 'checked' : ''; ?>>
+                                <label class="custom-control-label" for="is_course_selection_active">Ders Seçim Dönemi Aktif</label>
+                            </div>
+                            <small class="form-text text-muted">Bu seçenek, ders seçim dönemini aktif veya pasif yapar.</small>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="course_selection_start">Ders Seçim Başlangıç Tarihi ve Saati</label>
+                                    <input type="datetime-local" class="form-control" id="course_selection_start" 
+                                        name="course_selection_start" value="<?php echo $course_selection_start; ?>">
+                                    <small class="form-text text-muted">Ders seçim döneminin başlayacağı tarih ve saat.</small>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="course_selection_end">Ders Seçim Bitiş Tarihi ve Saati</label>
+                                    <input type="datetime-local" class="form-control" id="course_selection_end" 
+                                        name="course_selection_end" value="<?php echo $course_selection_end; ?>">
+                                    <small class="form-text text-muted">Ders seçim döneminin biteceği tarih ve saat.</small>
+                                </div>
+                            </div>
                         </div>
 
                         <div class="text-right">
